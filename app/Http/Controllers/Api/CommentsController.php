@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Comment;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Collection;
 
 class CommentsController extends Controller
 {
-    public function getComments($sort = '', $order = '') {
+    public function getComments(Request $request, $sort = '', $order = '') {
         $comments = Comment::with( 'user')->withCount('likes');
 
         if ($sort == 'sort_by_users') {
@@ -23,10 +26,19 @@ class CommentsController extends Controller
             $result = $comments->get();
         }
 
+        $paginateResult = $result->paginate(10);
+
         if ($order == 'reverse') {
-            return $result->reverse();
+            return $paginateResult->reverse();
         }
 
-        return $result;
+        return $paginateResult;
+    }
+
+    public function paginate($items, $perPage = 15, $page = null, $options = [])
+    {
+        $page = $page ?: (Paginator::resolveCurrentPage() ?: 1);
+        $items = $items instanceof Collection ? $items : Collection::make($items);
+        return new LengthAwarePaginator($items->forPage($page, $perPage), $items->count(), $perPage, $page, $options);
     }
 }
