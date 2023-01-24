@@ -26,13 +26,11 @@ class CommentsController extends Controller
             $result = $comments->get();
         }
 
-        $paginateResult = $result->paginate(10);
-
         if ($order == 'reverse') {
-            return $paginateResult->reverse();
+            return $result->reverse()->paginate(10);
         }
 
-        return $paginateResult;
+        return $result->paginate(10);
     }
 
     public function paginate($items, $perPage = 15, $page = null, $options = [])
